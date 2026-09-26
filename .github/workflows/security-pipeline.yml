@@ -39,17 +39,15 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Run Semgrep Security Scan
-        uses: semgrep/semgrep-action@v1
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
         with:
-          config: >-
-            p/default
-            p/security-audit
-            p/ci
-          generateSarif: "0"
-        env:
-          SEMGREP_ARGS: "--json --output=semgrep.json"
-        continue-on-error: true
+          python-version: '3.11'
+
+      - name: Install and Run Semgrep
+        run: |
+          pip install semgrep
+          semgrep scan --config="p/default" --config="p/security-audit" --json --output=semgrep.json || true
 
       - name: Upload SAST Scan Results
         uses: actions/upload-artifact@v4
