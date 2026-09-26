@@ -1,0 +1,32 @@
+name: DevSecOps Security Pipeline
+
+#sets up the trigger conditions (runs on push and pull_request to main) and a base setup job
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # Base job to verify the environment and checkout code
+  pipeline-setup:
+    name: Build & Pipeline Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Verify Application Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build Docker Image (Smoke Test)
+        run: |
+          docker build -t vulnerable-flask-app .
