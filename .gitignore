@@ -1,0 +1,5 @@
+#created to prevent pushing venv and db files to the repo
+venv/
+__pycache__/
+database.db
+*.pyc
