@@ -55,3 +55,31 @@ jobs:
         with:
           name: semgrep-sast-report
           path: semgrep.json
+  
+  dast-scan:
+    name: OWASP ZAP DAST Scan
+    runs-on: ubuntu-latest
+    needs: sast-scan # Ensures DAST runs only after SAST completes
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Build and Run Application
+        run: |
+          docker build -t vulnerable-flask-app .
+          docker run -d -p 5000:5000 vulnerable-flask-app
+          sleep 10 # Wait for the Flask server to fully boot up
+
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'http://localhost:5000'
+          fail_action: false # Prevents the pipeline from crashing so the report uploads
+
+      - name: Upload DAST Scan Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-dast-report
+          path: report_html.html
