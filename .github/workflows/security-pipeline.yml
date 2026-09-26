@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   pipeline-setup:
     name: Build & Pipeline Verification
@@ -48,6 +52,12 @@ jobs:
         run: |
           pip install semgrep
           semgrep scan --config="p/default" --config="p/security-audit" --json --output=semgrep.json || true
+
+      - name: Generate Automated Security Tickets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required for the gh CLI
+        run: |
+          python ticket_generator.py
 
       - name: Upload SAST Scan Results
         uses: actions/upload-artifact@v4
